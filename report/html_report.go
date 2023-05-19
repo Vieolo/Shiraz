@@ -20,22 +20,92 @@ import (
 	"golang.org/x/tools/cover"
 )
 
-type ReportFile struct {
-	Name     string
-	Path     string
-	Body     template.HTML
-	Coverage float64
-}
-type ReportFolder struct {
-	Name     string
-	Path     string
-	Coverage float64
-	Files    []ReportFile
-}
+// Entry point of report generation
+//
+// It takes the path of the `.out` file, analyze it, and generate the HTML reports
+func GenHTMLReport(outPath string) error {
 
-func (f *ReportFolder) AddFile(p ReportFile) []ReportFile {
-	f.Files = append(f.Files, p)
-	return f.Files
+	// Parsing the `.out` file
+	// This function is the default golang function
+	profiles, pErr := cover.ParseProfiles(outPath)
+	if pErr != nil {
+		return pErr
+	}
+
+	// Preparing the folders
+	//
+	// These folders represent the structure of the project
+	// The generated HTML files will be placed in a similar structure to the
+	// actual project. This placement makes it easier for the developer to understand the
+	// degree of the coverage
+	//
+	// Each project has its own coverage percentage which is the average coverage of its files
+	folders := make([]ReportFolder, 0)
+
+	// Getting the directories that will be used in coverage
+	dirs, err := findPkgs(profiles)
+	if err != nil {
+		return err
+	}
+
+	for _, profile := range profiles {
+		fn := profile.FileName
+
+		// Finding the file in the folders
+		file, err := findFile(dirs, fn)
+		if err != nil {
+			return err
+		}
+
+		// Getting the relative path of the folder of the file
+		folderPath, _ := getFolderRelativePath(file)
+
+		// Reading the contents of the file and generating an HTML detail
+		src, err := os.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("can't read %q: %v", fn, err)
+		}
+		var buf strings.Builder
+		err = htmlGen(&buf, src, profile.Boundaries(src))
+		if err != nil {
+			return err
+		}
+
+		thisFolder, created, index := findOrCreateFolder(folders, folderPath)
+
+		coverage, coveredBlock, totalBlock := percentCovered(profile)
+
+		thisFolder.AddFile(ReportFile{
+			Name:         fn,
+			Path:         file,
+			Body:         template.HTML(buf.String()),
+			Coverage:     coverage,
+			BlockCovered: coveredBlock,
+			BlockTotal:   totalBlock,
+		})
+
+		if created {
+			folders = append(folders, thisFolder)
+		} else {
+			folders[index] = thisFolder
+		}
+	}
+
+	// Writing the generated HTML files
+	outFolder := strings.Replace(outPath, "/coverage.out", "", 1)
+	for _, fol := range folders {
+		for _, file := range fol.Files {
+			sp := strings.Split(file.Name, "/")
+
+			newFileName := fmt.Sprintf("%v/%v.html", outFolder, strings.Replace(sp[len(sp)-1], ".go", ".html", 1))
+			we := os.WriteFile(newFileName, []byte(generateCompleteHTMLFile(file)), 0777)
+			if we != nil {
+				terminalutils.PrintError(we.Error())
+			}
+		}
+	}
+
+	return nil
 }
 
 func findOrCreateFolder(folders []ReportFolder, folderPath string) (ReportFolder, bool, int) {
@@ -51,78 +121,6 @@ func findOrCreateFolder(folders []ReportFolder, folderPath string) (ReportFolder
 		Path:  folderPath,
 		Files: make([]ReportFile, 0),
 	}, true, 0
-}
-
-func GenHTMLReport(outPath string) error {
-	profiles, pErr := cover.ParseProfiles(outPath)
-	if pErr != nil {
-		return pErr
-	}
-
-	folders := make([]ReportFolder, 0)
-
-	dirs, err := findPkgs(profiles)
-	if err != nil {
-		return err
-	}
-
-	for _, profile := range profiles {
-		fn := profile.FileName
-		file, err := findFile(dirs, fn)
-		if err != nil {
-			return err
-		}
-
-		folderPath, _ := getFolderRelativePath(file)
-
-		src, err := os.ReadFile(file)
-		if err != nil {
-			return fmt.Errorf("can't read %q: %v", fn, err)
-		}
-		var buf strings.Builder
-		err = htmlGen(&buf, src, profile.Boundaries(src))
-		if err != nil {
-			return err
-		}
-
-		thisFolder, created, index := findOrCreateFolder(folders, folderPath)
-
-		thisFolder.AddFile(ReportFile{
-			Name:     fn,
-			Path:     file,
-			Body:     template.HTML(buf.String()),
-			Coverage: percentCovered(profile),
-		})
-
-		if created {
-			folders = append(folders, thisFolder)
-		} else {
-			folders[index] = thisFolder
-		}
-	}
-
-	outFolder := strings.Replace(outPath, "/coverage.out", "", 1)
-	for _, fol := range folders {
-		for _, file := range fol.Files {
-			sp := strings.Split(file.Name, "/")
-
-			newFileName := fmt.Sprintf("%v/%v.html", outFolder, strings.Replace(sp[len(sp)-1], ".go", ".html", 1))
-			we := os.WriteFile(newFileName, []byte(generateCompleteHTMLFile(string(file.Body))), 0777)
-			if we != nil {
-				terminalutils.PrintError(we.Error())
-			}
-		}
-	}
-
-	return nil
-}
-
-type Pkg struct {
-	ImportPath string
-	Dir        string
-	Error      *struct {
-		Err string
-	}
 }
 
 func findPkgs(profiles []*cover.Profile) (map[string]*Pkg, error) {
@@ -225,7 +223,7 @@ func htmlGen(w io.Writer, src []byte, boundaries []cover.Boundary) error {
 // percentCovered returns, as a percentage, the fraction of the statements in
 // the profile covered by the test run.
 // In effect, it reports the coverage of a given source file.
-func percentCovered(p *cover.Profile) float64 {
+func percentCovered(p *cover.Profile) (float64, int64, int64) {
 	var total, covered int64
 	for _, b := range p.Blocks {
 		total += int64(b.NumStmt)
@@ -234,9 +232,9 @@ func percentCovered(p *cover.Profile) float64 {
 		}
 	}
 	if total == 0 {
-		return 0
+		return 0, 0, 0
 	}
-	return float64(covered) / float64(total) * 100
+	return float64(covered) / float64(total) * 100, covered, total
 }
 
 func getFolderRelativePath(p string) (string, string) {
@@ -252,7 +250,9 @@ func getFolderRelativePath(p string) (string, string) {
 	return strings.Join(sp, "/"), sp[len(sp)-1]
 }
 
-func generateCompleteHTMLFile(content string) string {
+// This function takes the analyzed body of a file and insert it into the
+// final HTML file to be saved in to the drive
+func generateCompleteHTMLFile(file ReportFile) string {
 	temp := fmt.Sprintf(`
 	<html>
 
@@ -305,11 +305,12 @@ func generateCompleteHTMLFile(content string) string {
 		</head>
 
 		<body>
+			Coverage: %v%%
 			<pre>%v
 			</pre>
 		</body>
 	</html>
-	`, content)
+	`, file.Coverage, file.Body)
 
 	return temp
 }
