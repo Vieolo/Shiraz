@@ -16,6 +16,7 @@ import (
 	"runtime"
 	"strings"
 
+	filemanagement "github.com/vieolo/file-management"
 	terminalutils "github.com/vieolo/terminal-utils"
 	"golang.org/x/tools/cover"
 )
@@ -97,7 +98,11 @@ func GenHTMLReport(outPath string) error {
 		for _, file := range fol.Files {
 			sp := strings.Split(file.Name, "/")
 
-			newFileName := fmt.Sprintf("%v/%v.html", outFolder, strings.Replace(sp[len(sp)-1], ".go", ".html", 1))
+			prePath := outFolder + "/" + fol.Path
+
+			filemanagement.CreateDirIfNotExists(prePath, 0777)
+
+			newFileName := fmt.Sprintf("%v/%v.html", prePath, strings.Replace(sp[len(sp)-1], ".go", "", 1))
 			we := os.WriteFile(newFileName, []byte(generateCompleteHTMLFile(file)), 0777)
 			if we != nil {
 				terminalutils.PrintError(we.Error())
@@ -247,7 +252,13 @@ func getFolderRelativePath(p string) (string, string) {
 		sp = sp[:len(sp)-1]
 	}
 
-	return strings.Join(sp, "/"), sp[len(sp)-1]
+	j := strings.Join(sp, "/")
+
+	if len(sp) == 0 {
+		return j, ""
+	}
+
+	return j, sp[len(sp)-1]
 }
 
 // This function takes the analyzed body of a file and insert it into the
