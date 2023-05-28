@@ -261,6 +261,13 @@ func generateCompleteHTMLFile(file ReportFile) string {
 	}
 	f := strings.Join(n, "\n")
 
+	coverageClass := "success"
+	if file.Coverage > 30 && file.Coverage < 80 {
+		coverageClass = "alert"
+	} else if file.Coverage <= 30 {
+		coverageClass = "error"
+	}
+
 	temp := fmt.Sprintf(`
 	<html>
 
@@ -273,6 +280,30 @@ func generateCompleteHTMLFile(file ReportFile) string {
 		body, pre, #legend span {
 			font-family: Menlo, monospace;
 			font-weight: bold;
+		}
+		.file-name p {
+			margin: 0;
+			font-size: 12px;
+		}
+		.coverage-header {
+			height: 40px;
+			display: flex;
+			align-items: center;
+			column-gap: 10px;
+			border-bottom: 1px solid rgb(113, 113, 113);
+		}
+		.coverage-text {
+			color: black;
+			padding: 2px 5px;
+		}
+		.coverage-error {
+			background-color: rgb(229, 85, 85);			
+		}
+		.coverage-alert {
+			background-color: rgb(220, 207, 104);
+		}
+		.coverage-success {
+			background-color: rgb(57, 220, 57);
 		}
 		#topbar {
 			background: black;
@@ -313,12 +344,17 @@ func generateCompleteHTMLFile(file ReportFile) string {
 		</head>
 
 		<body>
-			Coverage: %v%%
+			<div class="file-name">
+				<p>%v</p>
+			</div>
+			<div class="coverage-header">				
+				<p class="coverage-text coverage-%v">Coverage: %v%%</p>
+			</div>
 			<pre>%v
 			</pre>
 		</body>
 	</html>
-	`, file.Coverage, f)
+	`, file.Name, coverageClass, file.Coverage, f)
 
 	return temp
 }
