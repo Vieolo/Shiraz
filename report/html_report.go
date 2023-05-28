@@ -253,14 +253,22 @@ func getFolderRelativePath(p string) (string, string) {
 // This function takes the analyzed body of a file and insert it into the
 // final HTML file to be saved in to the drive
 func generateCompleteHTMLFile(file ReportFile) string {
+
+	// Adding line number to the `pre` tags
+	n := strings.Split(string(file.Body), "\n")
+	for i := 0; i < len(n); i++ {
+		n[i] = fmt.Sprintf("%v    %v", i+1, n[i])
+	}
+	f := strings.Join(n, "\n")
+
 	temp := fmt.Sprintf(`
 	<html>
 
 		<head>
 		<style>
 		body {
-			background: black;
-			color: rgb(80, 80, 80);
+			background: rgb(29, 29, 29);
+			color: rgb(113, 113, 113);
 		}
 		body, pre, #legend span {
 			font-family: Menlo, monospace;
@@ -310,7 +318,7 @@ func generateCompleteHTMLFile(file ReportFile) string {
 			</pre>
 		</body>
 	</html>
-	`, file.Coverage, file.Body)
+	`, file.Coverage, f)
 
 	return temp
 }
