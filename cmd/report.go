@@ -5,10 +5,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
 	filemanagement "github.com/vieolo/file-management"
+	"github.com/vieolo/shiraz/browser"
 	"github.com/vieolo/shiraz/report"
 	"github.com/vieolo/shiraz/utils"
 	tu "github.com/vieolo/terminal-utils"
@@ -28,7 +30,11 @@ var reportCmd = &cobra.Command{
 		}
 
 		outPath := fmt.Sprintf("%vcoverage.out", conf.CoverageFolderPath)
-		filemanagement.CreateDirIfNotExists(outPath, 0777)
+		re := os.RemoveAll(conf.CoverageFolderPath)
+		if re != nil {
+			tu.PrintError(re.Error())
+		}
+		filemanagement.CreateDirIfNotExists(conf.CoverageFolderPath, 0777)
 
 		// go test -v -coverpkg=./... ./... -coverprofile=coverage.out ./...
 		cArgs := []string{
@@ -50,7 +56,10 @@ var reportCmd = &cobra.Command{
 		genErr := report.GenHTMLReport(outPath)
 		if genErr != nil {
 			tu.PrintError(genErr.Error())
+			return
 		}
+
+		browser.Open(conf.CoverageFolderPath + "/index.html")
 	},
 }
 

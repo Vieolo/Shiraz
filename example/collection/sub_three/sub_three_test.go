@@ -1,4 +1,4 @@
-package subexample
+package subthree
 
 import (
 	"testing"

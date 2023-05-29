@@ -1,9 +1,9 @@
 package example
 
-import subexample "github.com/vieolo/shiraz/example/sub_example"
+import subone "github.com/vieolo/shiraz/example/sub_one"
 
 func FnOne() string {
-	return subexample.FnFive()
+	return subone.FnFive()
 }
 
 func FnTwo() string {

@@ -41,7 +41,7 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 			<td class="file-td"><a href="%v/index.html">%v</a></td>
 			<td class="coverage-text coverage-%v">%v%%</td>
 		</tr>
-		`, sub.Name, sub.Name, cc, sub.GetCoverage().Total))
+		`, sub.RelativePath, sub.Name, cc, sub.GetCoverage().Total))
 	}
 
 	subTable := ""
