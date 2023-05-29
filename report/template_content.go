@@ -7,10 +7,9 @@ import (
 
 // This function takes the analyzed body of a file and insert it into the
 // final HTML file to be saved in to the drive
-func generateContentHTMLFile(file ReportFile) string {
+func generateContentHTMLFile(basePath string, file ReportFile) string {
 
-	sp := strings.Split(file.Name, "/")
-	name := sp[len(sp)-1]
+	name := strings.TrimPrefix(strings.Replace(file.Path, basePath, "", 1), "/")
 
 	// Adding line number to the `pre` tags
 	n := strings.Split(string(file.Body), "\n")

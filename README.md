@@ -10,8 +10,6 @@ The index files display the files and nested folders in a folder. The index file
 
 TODO:
 
-- Generate index files
-- Place the generated files in the right folders
 - Style the generated files
 - Add number of execution to the content files
 - Add support for a config file in the target project

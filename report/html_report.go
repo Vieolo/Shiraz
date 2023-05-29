@@ -82,10 +82,16 @@ func GenHTMLReport(outPath string) error {
 		}
 	}
 
+	var baseFolder ReportFolder
+
 	for i := 0; i < len(folders); i++ {
 		folder := folders[i]
 		folder.Subfolders = append(folder.Subfolders, getSubfolders(folder, folders)...)
 		folders[i] = folder
+
+		if folder.Name == "" {
+			baseFolder = folder
+		}
 	}
 
 	// Writing the generated HTML files
@@ -105,7 +111,7 @@ func GenHTMLReport(outPath string) error {
 			sp := strings.Split(file.Name, "/")
 
 			newFileName := fmt.Sprintf("%v/%v.html", prePath, strings.Replace(sp[len(sp)-1], ".go", "", 1))
-			we := os.WriteFile(newFileName, []byte(generateContentHTMLFile(file)), 0777)
+			we := os.WriteFile(newFileName, []byte(generateContentHTMLFile(baseFolder.AbsolutePath, file)), 0777)
 			if we != nil {
 				terminalutils.PrintError(we.Error())
 			}
