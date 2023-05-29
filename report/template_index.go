@@ -33,6 +33,33 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 		`, strings.Replace(name, ".go", ".html", 1), name, fileCoverageClass, f.Coverage))
 	}
 
+	subFolders := make([]string, 0)
+	for _, sub := range fol.Subfolders {
+		cc := getCoverageClass(sub.GetCoverage().Total)
+		subFolders = append(subFolders, fmt.Sprintf(`
+		<tr>
+			<td class="file-td"><a href="%v/index.html">%v</a></td>
+			<td class="coverage-text coverage-%v">%v%%</td>
+		</tr>
+		`, sub.Name, sub.Name, cc, sub.GetCoverage().Total))
+	}
+
+	subTable := ""
+	if len(subFolders) > 0 {
+		subTable = fmt.Sprintf(`
+		<table>
+			<tbody>
+				<tr>
+					<td class="file-td" >Subfolders</td>
+					<td>Coverage</td>
+				</tr>
+				%v
+			</tbody>
+		</table>
+		<br/>
+		`, strings.Join(subFolders, ""))
+	}
+
 	temp := fmt.Sprintf(`
 	<html>
 
@@ -137,11 +164,14 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 				<p class="coverage-text coverage-%v">Files: %v%%</p>
 				<p class="coverage-text coverage-%v">Folders: %v%%</p>
 			</div>
+
+			%v
+
 			<table>
 				<tbody>
 					
 					<tr>
-						<td>File Name</td>
+						<td>Files</td>
 						<td>Coverage</td>
 					</tr>
 					
@@ -150,7 +180,7 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 			</table>
 		</body>
 	</html>
-	`, backButton, fol.Name, folTotalCC, folderCoverage.Total, folFilesCC, folderCoverage.Files, folFoldersCC, folderCoverage.Folders, strings.Join(files, ""))
+	`, backButton, fol.Name, folTotalCC, folderCoverage.Total, folFilesCC, folderCoverage.Files, folFoldersCC, folderCoverage.Folders, subTable, strings.Join(files, ""))
 
 	return temp
 }

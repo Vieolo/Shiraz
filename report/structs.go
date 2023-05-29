@@ -18,7 +18,8 @@ func (f *ReportFolder) AddFile(p ReportFile) []ReportFile {
 
 type ReportFolder struct {
 	Name         string
-	Path         string
+	RelativePath string
+	AbsolutePath string
 	Coverage     float64
 	BlockCovered int64
 	BlockTotal   int64
@@ -39,9 +40,16 @@ func (f ReportFolder) GetCoverage() ReportFolderCoverage {
 	}
 	filesCoverage = filesCoverage / float64(len(f.Files))
 
+	var folCoverage float64 = 0
+	for _, sub := range f.Subfolders {
+		folCoverage += sub.GetCoverage().Total
+	}
+	folCoverage = folCoverage / float64(len(f.Subfolders))
+
 	return ReportFolderCoverage{
-		Files: filesCoverage,
-		Total: filesCoverage,
+		Files:   filesCoverage,
+		Total:   filesCoverage,
+		Folders: folCoverage,
 	}
 }
 

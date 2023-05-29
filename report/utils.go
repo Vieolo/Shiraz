@@ -18,18 +18,19 @@ import (
 	"golang.org/x/tools/cover"
 )
 
-func findOrCreateFolder(folders []ReportFolder, folderPath string) (ReportFolder, bool, int) {
+func findOrCreateFolder(folders []ReportFolder, relativePath string, absolutePath string) (ReportFolder, bool, int) {
 	for i, f := range folders {
-		if f.Path == folderPath {
+		if f.RelativePath == relativePath {
 			return f, false, i
 		}
 	}
 
-	thisName := strings.Split(folderPath, "/")
+	thisName := strings.Split(relativePath, "/")
 	return ReportFolder{
-		Name:  thisName[len(thisName)-1],
-		Path:  folderPath,
-		Files: make([]ReportFile, 0),
+		Name:         thisName[len(thisName)-1],
+		RelativePath: relativePath,
+		AbsolutePath: absolutePath,
+		Files:        make([]ReportFile, 0),
 	}, true, 0
 }
 
@@ -147,7 +148,11 @@ func percentCovered(p *cover.Profile) (float64, int64, int64) {
 	return float64(covered) / float64(total) * 100, covered, total
 }
 
-func getFolderRelativePath(p string) (string, string) {
+func getFolderPath(p string) (string, string, string) {
+	absPathArr := strings.Split(p, "/")
+	absPathArr = absPathArr[:len(absPathArr)-1]
+	absPath := strings.Join(absPathArr, "/")
+
 	wd, _ := os.Getwd()
 
 	newPath := strings.TrimPrefix(strings.Replace(p, wd, "", 1), "/")
@@ -160,10 +165,10 @@ func getFolderRelativePath(p string) (string, string) {
 	j := strings.Join(sp, "/")
 
 	if len(sp) == 0 {
-		return j, ""
+		return j, absPath, ""
 	}
 
-	return j, sp[len(sp)-1]
+	return j, absPath, sp[len(sp)-1]
 }
 
 func getCoverageClass(cov float64) string {
@@ -175,4 +180,26 @@ func getCoverageClass(cov float64) string {
 	}
 
 	return coverageClass
+}
+
+func getSubfolders(currentFolder ReportFolder, allFolders []ReportFolder) []ReportFolder {
+	subs := make([]ReportFolder, 0)
+	mainDivCount := len(strings.Split(currentFolder.AbsolutePath, "/"))
+
+	for _, fol := range allFolders {
+		if fol.AbsolutePath == currentFolder.AbsolutePath {
+			continue
+		}
+
+		divCount := len(strings.Split(fol.AbsolutePath, "/"))
+
+		if divCount <= mainDivCount {
+			continue
+		}
+
+		if strings.Contains(fol.AbsolutePath, currentFolder.AbsolutePath) {
+			subs = append(subs, fol)
+		}
+	}
+	return subs
 }

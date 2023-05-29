@@ -16,7 +16,7 @@ import (
 // It takes the path of the `.out` file, analyze it, and generate the HTML reports
 func GenHTMLReport(outPath string) error {
 
-	// Parsing the `.out` file
+	// Parsing the `.out` file. Each profile is the representation of the analysis of a single file
 	// This function is the default golang function
 	profiles, pErr := cover.ParseProfiles(outPath)
 	if pErr != nil {
@@ -49,7 +49,7 @@ func GenHTMLReport(outPath string) error {
 		}
 
 		// Getting the relative path of the folder of the file
-		folderPath, _ := getFolderRelativePath(file)
+		relativePath, absolutePath, _ := getFolderPath(file)
 
 		// Reading the contents of the file and generating an HTML detail
 		src, err := os.ReadFile(file)
@@ -62,7 +62,7 @@ func GenHTMLReport(outPath string) error {
 			return err
 		}
 
-		thisFolder, created, index := findOrCreateFolder(folders, folderPath)
+		thisFolder, created, index := findOrCreateFolder(folders, relativePath, absolutePath)
 
 		coverage, coveredBlock, totalBlock := percentCovered(profile)
 
@@ -82,11 +82,17 @@ func GenHTMLReport(outPath string) error {
 		}
 	}
 
+	for i := 0; i < len(folders); i++ {
+		folder := folders[i]
+		folder.Subfolders = append(folder.Subfolders, getSubfolders(folder, folders)...)
+		folders[i] = folder
+	}
+
 	// Writing the generated HTML files
 	outFolder := strings.Replace(outPath, "/coverage.out", "", 1)
 	for _, fol := range folders {
 
-		prePath := outFolder + "/" + fol.Path
+		prePath := outFolder + "/" + fol.RelativePath
 		filemanagement.CreateDirIfNotExists(prePath, 0777)
 
 		newFileName := fmt.Sprintf("%v/index.html", prePath)
