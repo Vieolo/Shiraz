@@ -10,6 +10,10 @@ The index files display the files and nested folders in a folder. The index file
 
 TODO:
 
+- Fix the test command
+- Fix the decimal places of the coverage
+- Fix the display of deeply nested folders
+- Add collapse/expand button to the content file
 - Style the generated files
 - Add number of execution to the content files
 - Add support for a config file in the target project

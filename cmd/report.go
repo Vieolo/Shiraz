@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/spf13/cobra"
+	filemanagement "github.com/vieolo/file-management"
 	"github.com/vieolo/shiraz/report"
 	"github.com/vieolo/shiraz/utils"
 	tu "github.com/vieolo/terminal-utils"
@@ -27,9 +28,14 @@ var reportCmd = &cobra.Command{
 		}
 
 		outPath := fmt.Sprintf("%vcoverage.out", conf.CoverageFolderPath)
+		filemanagement.CreateDirIfNotExists(outPath, 0777)
 
+		// go test -v -coverpkg=./... ./... -coverprofile=coverage.out ./...
 		cArgs := []string{
 			"test",
+			"-v",
+			fmt.Sprintf("-coverpkg=%v", projPath),
+			projPath,
 			fmt.Sprintf("-coverprofile=%v", outPath),
 			projPath,
 		}
