@@ -115,6 +115,9 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 		.coverage-success {
 			background-color: rgb(57, 220, 57);
 		}
+		.coverage-none {
+			display: none;
+		}
 		#topbar {
 			background: black;
 			position: fixed;

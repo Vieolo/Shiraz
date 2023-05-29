@@ -173,7 +173,9 @@ func getFolderPath(p string) (string, string, string) {
 
 func getCoverageClass(cov float64) string {
 	coverageClass := "success"
-	if cov > 30 && cov < 80 {
+	if cov == -1 {
+		coverageClass = "none"
+	} else if cov > 30 && cov < 80 {
 		coverageClass = "alert"
 	} else if cov <= 30 {
 		coverageClass = "error"

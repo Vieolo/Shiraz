@@ -28,28 +28,45 @@ type ReportFolder struct {
 }
 
 type ReportFolderCoverage struct {
-	Total   float64
-	Files   float64
-	Folders float64
+	Total          float64
+	UndividedTotal float64
+	Files          float64
+	Folders        float64
+	TotalFileCount int
 }
 
 func (f ReportFolder) GetCoverage() ReportFolderCoverage {
+
+	var total float64 = 0
+	var fileCount int = 0
+
 	var filesCoverage float64 = 0
 	for _, file := range f.Files {
 		filesCoverage += file.Coverage
+		total += file.Coverage
+		fileCount += 1
 	}
 	filesCoverage = filesCoverage / float64(len(f.Files))
 
 	var folCoverage float64 = 0
-	for _, sub := range f.Subfolders {
-		folCoverage += sub.GetCoverage().Total
+	if len(f.Subfolders) > 0 {
+		for _, sub := range f.Subfolders {
+			sc := sub.GetCoverage()
+			folCoverage += sc.Total
+			total += sc.UndividedTotal
+			fileCount += sc.TotalFileCount
+		}
+		folCoverage = folCoverage / float64(len(f.Subfolders))
+	} else {
+		folCoverage = -1
 	}
-	folCoverage = folCoverage / float64(len(f.Subfolders))
 
 	return ReportFolderCoverage{
-		Files:   filesCoverage,
-		Total:   filesCoverage,
-		Folders: folCoverage,
+		Files:          filesCoverage,
+		Total:          total / float64(fileCount),
+		UndividedTotal: total,
+		Folders:        folCoverage,
+		TotalFileCount: fileCount,
 	}
 }
 
