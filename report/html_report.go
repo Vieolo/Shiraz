@@ -85,12 +85,18 @@ func GenHTMLReport(outPath string) error {
 	// Writing the generated HTML files
 	outFolder := strings.Replace(outPath, "/coverage.out", "", 1)
 	for _, fol := range folders {
+
+		prePath := outFolder + "/" + fol.Path
+		filemanagement.CreateDirIfNotExists(prePath, 0777)
+
+		newFileName := fmt.Sprintf("%v/index.html", prePath)
+		iwe := os.WriteFile(newFileName, []byte(generateIndexHTMLFile(fol)), 0777)
+		if iwe != nil {
+			terminalutils.PrintError(iwe.Error())
+		}
+
 		for _, file := range fol.Files {
 			sp := strings.Split(file.Name, "/")
-
-			prePath := outFolder + "/" + fol.Path
-
-			filemanagement.CreateDirIfNotExists(prePath, 0777)
 
 			newFileName := fmt.Sprintf("%v/%v.html", prePath, strings.Replace(sp[len(sp)-1], ".go", "", 1))
 			we := os.WriteFile(newFileName, []byte(generateContentHTMLFile(file)), 0777)

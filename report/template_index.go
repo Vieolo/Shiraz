@@ -7,23 +7,26 @@ import (
 
 // This function takes the analyzed body of a file and insert it into the
 // final HTML file to be saved in to the drive
-func generateContentHTMLFile(file ReportFile) string {
-
-	sp := strings.Split(file.Name, "/")
-	name := sp[len(sp)-1]
-
-	// Adding line number to the `pre` tags
-	n := strings.Split(string(file.Body), "\n")
-	for i := 0; i < len(n); i++ {
-		n[i] = fmt.Sprintf("%v    %v", i+1, n[i])
-	}
-	f := strings.Join(n, "\n")
+func generateIndexHTMLFile(fol ReportFolder) string {
 
 	coverageClass := "success"
-	if file.Coverage > 30 && file.Coverage < 80 {
+	if fol.Coverage > 30 && fol.Coverage < 80 {
 		coverageClass = "alert"
-	} else if file.Coverage <= 30 {
+	} else if fol.Coverage <= 30 {
 		coverageClass = "error"
+	}
+
+	files := make([]string, 0)
+
+	for _, f := range fol.Files {
+		sp := strings.Split(f.Name, "/")
+		name := sp[len(sp)-1]
+		files = append(files, fmt.Sprintf(`
+		<tr>	
+			<td class="file-td"><a href="./%v">%v</a></td>
+			<td class="coverage-text coverage-%v">%v%%</td>
+		</tr>
+		`, strings.Replace(name, ".go", ".html", 1), name, coverageClass, f.Coverage))
 	}
 
 	temp := fmt.Sprintf(`
@@ -38,17 +41,20 @@ func generateContentHTMLFile(file ReportFile) string {
 		body, pre, #legend span {
 			font-family: Menlo, monospace;
 			font-weight: bold;
-		}		
+		}
 		a {
 			color: rgb(124, 152, 255);
 			text-decoration: none;
 		}
-		.file-name {
-			display: flex;
-			align-items: center;
-			column-gap: 10px;
+		table {
+			width: 100%%;
 		}
-		.file-name p {			
+
+		.file-td {
+			width: 250px;
+		}
+
+		.file-name p {
 			margin: 0;
 			font-size: 12px;
 		}
@@ -112,17 +118,19 @@ func generateContentHTMLFile(file ReportFile) string {
 
 		<body>
 			<div class="file-name">
-				<a href="./index.html"><-</a>
 				<p>%v</p>
 			</div>
 			<div class="coverage-header">				
 				<p class="coverage-text coverage-%v">Coverage: %v%%</p>
 			</div>
-			<pre>%v
-			</pre>
+			<table>
+				<tbody>
+					%v
+				</tbody>
+			</table>
 		</body>
 	</html>
-	`, name, coverageClass, file.Coverage, f)
+	`, fol.Name, coverageClass, fol.Coverage, strings.Join(files, ""))
 
 	return temp
 }
