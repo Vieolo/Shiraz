@@ -165,3 +165,14 @@ func getFolderRelativePath(p string) (string, string) {
 
 	return j, sp[len(sp)-1]
 }
+
+func getCoverageClass(cov float64) string {
+	coverageClass := "success"
+	if cov > 30 && cov < 80 {
+		coverageClass = "alert"
+	} else if cov <= 30 {
+		coverageClass = "error"
+	}
+
+	return coverageClass
+}

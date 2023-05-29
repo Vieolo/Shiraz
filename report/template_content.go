@@ -19,12 +19,7 @@ func generateContentHTMLFile(file ReportFile) string {
 	}
 	f := strings.Join(n, "\n")
 
-	coverageClass := "success"
-	if file.Coverage > 30 && file.Coverage < 80 {
-		coverageClass = "alert"
-	} else if file.Coverage <= 30 {
-		coverageClass = "error"
-	}
+	coverageClass := getCoverageClass(file.Coverage)
 
 	temp := fmt.Sprintf(`
 	<html>

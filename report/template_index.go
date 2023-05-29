@@ -9,24 +9,24 @@ import (
 // final HTML file to be saved in to the drive
 func generateIndexHTMLFile(fol ReportFolder) string {
 
-	coverageClass := "success"
-	if fol.Coverage > 30 && fol.Coverage < 80 {
-		coverageClass = "alert"
-	} else if fol.Coverage <= 30 {
-		coverageClass = "error"
+	coverageClass := getCoverageClass(fol.Coverage)
+
+	backButton := ""
+	if fol.Name != "" {
+		backButton = `<a href="../index.html"><-</a>`
 	}
 
 	files := make([]string, 0)
-
 	for _, f := range fol.Files {
 		sp := strings.Split(f.Name, "/")
 		name := sp[len(sp)-1]
+		fileCoverageClass := getCoverageClass(f.Coverage)
 		files = append(files, fmt.Sprintf(`
 		<tr>	
 			<td class="file-td"><a href="./%v">%v</a></td>
 			<td class="coverage-text coverage-%v">%v%%</td>
 		</tr>
-		`, strings.Replace(name, ".go", ".html", 1), name, coverageClass, f.Coverage))
+		`, strings.Replace(name, ".go", ".html", 1), name, fileCoverageClass, f.Coverage))
 	}
 
 	temp := fmt.Sprintf(`
@@ -52,6 +52,12 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 
 		.file-td {
 			width: 250px;
+		}
+
+		.file-name {
+			display: flex;
+			align-items: center;
+			column-gap: 10px;
 		}
 
 		.file-name p {
@@ -118,6 +124,7 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 
 		<body>
 			<div class="file-name">
+				%v
 				<p>%v</p>
 			</div>
 			<div class="coverage-header">				
@@ -130,7 +137,7 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 			</table>
 		</body>
 	</html>
-	`, fol.Name, coverageClass, fol.Coverage, strings.Join(files, ""))
+	`, backButton, fol.Name, coverageClass, fol.Coverage, strings.Join(files, ""))
 
 	return temp
 }
