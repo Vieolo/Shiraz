@@ -9,7 +9,11 @@ import (
 // final HTML file to be saved in to the drive
 func generateIndexHTMLFile(fol ReportFolder) string {
 
-	coverageClass := getCoverageClass(fol.Coverage)
+	folderCoverage := fol.GetCoverage()
+
+	folTotalCC := getCoverageClass(folderCoverage.Total)
+	folFilesCC := getCoverageClass(folderCoverage.Files)
+	folFoldersCC := getCoverageClass(folderCoverage.Folders)
 
 	backButton := ""
 	if fol.Name != "" {
@@ -51,7 +55,7 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 		}
 
 		.file-td {
-			width: 250px;
+			width: 350px;
 		}
 
 		.file-name {
@@ -128,16 +132,25 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 				<p>%v</p>
 			</div>
 			<div class="coverage-header">				
-				<p class="coverage-text coverage-%v">Coverage: %v%%</p>
+				<p>Coverage -> </p>
+				<p class="coverage-text coverage-%v">Total: %v%%</p>
+				<p class="coverage-text coverage-%v">Files: %v%%</p>
+				<p class="coverage-text coverage-%v">Folders: %v%%</p>
 			</div>
 			<table>
 				<tbody>
+					
+					<tr>
+						<td>File Name</td>
+						<td>Coverage</td>
+					</tr>
+					
 					%v
 				</tbody>
 			</table>
 		</body>
 	</html>
-	`, backButton, fol.Name, coverageClass, fol.Coverage, strings.Join(files, ""))
+	`, backButton, fol.Name, folTotalCC, folderCoverage.Total, folFilesCC, folderCoverage.Files, folFoldersCC, folderCoverage.Folders, strings.Join(files, ""))
 
 	return temp
 }
