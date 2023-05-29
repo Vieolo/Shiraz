@@ -7,14 +7,16 @@ import (
 	"strings"
 
 	filemanagement "github.com/vieolo/file-management"
+	"github.com/vieolo/shiraz/utils"
 	terminalutils "github.com/vieolo/terminal-utils"
+	"golang.org/x/exp/slices"
 	"golang.org/x/tools/cover"
 )
 
 // Entry point of report generation
 //
 // It takes the path of the `.out` file, analyze it, and generate the HTML reports
-func GenHTMLReport(outPath string) error {
+func GenHTMLReport(outPath string, conf utils.ShirazConfig) error {
 
 	// Parsing the `.out` file. Each profile is the representation of the analysis of a single file
 	// This function is the default golang function
@@ -41,6 +43,16 @@ func GenHTMLReport(outPath string) error {
 
 	for _, profile := range profiles {
 		fn := profile.FileName
+		if slices.Contains(conf.IgnoreFiles, fn) {
+			continue
+		}
+
+		sp := strings.Split(fn, "/")
+		folN := strings.Join(sp[:len(sp)-1], "/")
+
+		if slices.Contains(conf.IgnoreFolders, folN) {
+			continue
+		}
 
 		// Finding the file in the folders
 		file, err := findFile(dirs, fn)

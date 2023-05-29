@@ -3,12 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"os"
+	"strings"
 )
 
 type ShirazConfig struct {
 	ProjectPath        string   `json:"projectPath"`
 	CoverageFolderPath string   `json:"coverageFolderPath"`
 	Ignore             []string `json:"ignore"`
+	IgnoreFiles        []string
+	IgnoreFolders      []string
 }
 
 func GetConfig() (ShirazConfig, error) {
@@ -29,6 +32,16 @@ func GetConfig() (ShirazConfig, error) {
 
 	if conf.CoverageFolderPath == "" {
 		conf.CoverageFolderPath = "./coverage/"
+	}
+
+	if len(conf.Ignore) > 0 {
+		for _, i := range conf.Ignore {
+			if strings.Contains(i, ".go") {
+				conf.IgnoreFiles = append(conf.IgnoreFiles, i)
+			} else {
+				conf.IgnoreFolders = append(conf.IgnoreFolders, i)
+			}
+		}
 	}
 
 	return conf, nil

@@ -53,7 +53,7 @@ var reportCmd = &cobra.Command{
 			return
 		}
 
-		genErr := report.GenHTMLReport(outPath)
+		genErr := report.GenHTMLReport(outPath, conf)
 		if genErr != nil {
 			tu.PrintError(genErr.Error())
 			return
