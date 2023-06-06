@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -47,10 +48,27 @@ var reportCmd = &cobra.Command{
 		}
 
 		c := exec.Command("go", cArgs...)
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		c.Stdout = &stdout
+		c.Stderr = &stderr
+
+		if len(conf.Env) > 0 {
+			c.Env = os.Environ()
+
+			for k, v := range conf.Env {
+				c.Env = append(c.Env, fmt.Sprintf("%v=%v", k, v))
+			}
+		}
+
 		runErr := c.Run()
 		if runErr != nil {
 			tu.PrintError(runErr.Error())
 			return
+		}
+		fmt.Println(stdout.String())
+		if len(stderr.String()) > 0 {
+			fmt.Println(stderr.String())
 		}
 
 		genErr := report.GenHTMLReport(outPath, conf)

@@ -7,9 +7,10 @@ import (
 )
 
 type ShirazConfig struct {
-	ProjectPath        string   `json:"projectPath"`
-	CoverageFolderPath string   `json:"coverageFolderPath"`
-	Ignore             []string `json:"ignore"`
+	ProjectPath        string            `json:"projectPath"`
+	CoverageFolderPath string            `json:"coverageFolderPath"`
+	Env                map[string]string `json:"env"`
+	Ignore             []string          `json:"ignore"`
 	IgnoreFiles        []string
 	IgnoreFolders      []string
 }
