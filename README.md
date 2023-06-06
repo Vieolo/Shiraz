@@ -1,23 +1,16 @@
 # Shiraz
 CLI for testing and coverage of Go projects
 
-## HTML Report
-The generated HTML files are of two types; content and index.
+At the moment, shiraz runs unit tests and generates an improved version of HTML coverage report by running the `report` command.
 
-The content files display the coverage of a single file.
+You can define the configuration of your project by creating a `shiraz.json` in your main directory.
 
-The index files display the files and nested folders in a folder. The index files allow the viewer to navigate the files and provides an average coverage of the nested files and folders.
 
-TODO:
+## shiraz.json
 
-- Fix the test command
-- Fix the decimal places of the coverage
-- Fix the display of deeply nested folders
-- Add collapse/expand button to the content file
-- Style the generated files
-- Add number of execution to the content files
-- Add support for a config file in the target project
-- Add multiple types of test runs (normal, with coverage, etc.)
-- Process and refactor the output of the tests to be more readable
-- Add support for the features of `gotestsum`
-- Add a coverage summary in the terminal output
+All fields in the `shiraz.json` are optional. Here are the possible fields.
+
+- `projectPath`: The path to the go project. Useful if the config file is not in the project being tested.
+- `coverageFolderPath`: The path to the folder where the coverage files are generated and saved at
+- `env`: The environmental variables to be added when running the test command.
+- `ignore`: An array of files of folders you wish to ignore from the report. You need to include the package name as well. e.g. `github.com/example/dir_1` or `github.com/example/dir_2/file_1.go`
