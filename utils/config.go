@@ -6,7 +6,13 @@ import (
 	"strings"
 )
 
+type testConifg struct {
+	Command string `json:"command"`
+	Output  string `json:"output"`
+}
+
 type ShirazConfig struct {
+	Test               testConifg        `json:"test"`
 	ProjectPath        string            `json:"projectPath"`
 	CoverageFolderPath string            `json:"coverageFolderPath"`
 	Env                map[string]string `json:"env"`
@@ -48,16 +54,41 @@ func GetConfig() (ShirazConfig, error) {
 	return conf, nil
 }
 
-func GetConfigOrDefault() ShirazConfig {
-	userDefined, uE := GetConfig()
-
-	if uE == nil {
-		return userDefined
-	}
-
+func GetDefaultConfig() ShirazConfig {
 	return ShirazConfig{
+		Test: testConifg{
+			Command: "go test -v ./...",
+			Output:  "pkgname",
+		},
 		ProjectPath:        ".",
 		CoverageFolderPath: "./coverage/",
 		Ignore:             make([]string, 0),
 	}
+}
+
+func GetConfigOrDefault() ShirazConfig {
+	userDefined, uE := GetConfig()
+	defaultConf := GetDefaultConfig()
+
+	if uE != nil {
+		return GetDefaultConfig()
+	}
+
+	if userDefined.CoverageFolderPath == "" {
+		userDefined.CoverageFolderPath = defaultConf.CoverageFolderPath
+	}
+
+	if userDefined.ProjectPath == "" {
+		userDefined.ProjectPath = defaultConf.ProjectPath
+	}
+
+	if userDefined.Test.Command == "" {
+		userDefined.Test.Command = defaultConf.Test.Command
+	}
+
+	if userDefined.Test.Output == "" {
+		userDefined.Test.Output = defaultConf.Test.Output
+	}
+
+	return userDefined
 }
