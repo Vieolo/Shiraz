@@ -4,10 +4,8 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/spf13/cobra"
 	filemanagement "github.com/vieolo/file-management"
@@ -26,7 +24,7 @@ var reportCmd = &cobra.Command{
 		conf := utils.GetConfigOrDefault()
 
 		projPath := "./..."
-		if conf.ProjectPath != "." {
+		if conf.ProjectPath != "" && conf.ProjectPath != "." {
 			projPath = conf.ProjectPath
 		}
 
@@ -47,25 +45,17 @@ var reportCmd = &cobra.Command{
 			projPath,
 		}
 
-		c := exec.Command("go", cArgs...)
-		var stdout bytes.Buffer
-		var stderr bytes.Buffer
-		c.Stdout = &stdout
-		c.Stderr = &stderr
+		stdout, stderr, commandErr := tu.RunCommand(tu.CommandConfig{
+			Command: "go",
+			Args:    cArgs,
+			Env:     conf.Env,
+		})
 
-		if len(conf.Env) > 0 {
-			c.Env = os.Environ()
-
-			for k, v := range conf.Env {
-				c.Env = append(c.Env, fmt.Sprintf("%v=%v", k, v))
-			}
-		}
-
-		runErr := c.Run()
-		if runErr != nil {
-			tu.PrintError(runErr.Error())
+		if commandErr != nil {
+			tu.PrintError(commandErr.Error())
 			return
 		}
+
 		fmt.Println(stdout.String())
 		if len(stderr.String()) > 0 {
 			fmt.Println(stderr.String())

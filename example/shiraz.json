@@ -1,4 +1,7 @@
 {
+    "test": {
+        "output": "pkgname"
+    },
     "ignore": [
         "github.com/vieolo/shiraz/example/collection/sub_four",
         "github.com/vieolo/shiraz/example/collection/sub_three/sub_three_two.go"
