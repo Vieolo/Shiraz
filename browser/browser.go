@@ -8,45 +8,27 @@ package browser
 import (
 	"os"
 	"os/exec"
-	"runtime"
 	"time"
+	"github.com/skratchdot/open-golang/open"
 )
 
-// Commands returns a list of possible commands to use to open a url.
-func Commands() [][]string {
-	var cmds [][]string
-	if exe := os.Getenv("BROWSER"); exe != "" {
-		cmds = append(cmds, []string{exe})
-	}
-	switch runtime.GOOS {
-	case "darwin":
-		cmds = append(cmds, []string{"/usr/bin/open"})
-	case "windows":
-		cmds = append(cmds, []string{"cmd", "/c", "start"})
-	default:
-		if os.Getenv("DISPLAY") != "" {
-			// xdg-open is only for use in a desktop environment.
-			cmds = append(cmds, []string{"xdg-open"})
-		}
-	}
-	cmds = append(cmds,
-		[]string{"chrome"},
-		[]string{"google-chrome"},
-		[]string{"chromium"},
-		[]string{"firefox"},
-	)
-	return cmds
+
+func checkEnvVarOverride() string {
+	return os.Getenv("BROWSER")
 }
 
 // Open tries to open url in a browser and reports whether it succeeded.
 func Open(url string) bool {
-	for _, args := range Commands() {
-		cmd := exec.Command(args[0], append(args[1:], url)...)
-		if cmd.Start() == nil && appearsSuccessful(cmd, 3*time.Second) {
-			return true
-		}
+	var err error;
+	if browserVar := checkEnvVarOverride(); browserVar != "" {
+		err = open.RunWith(url, browserVar)
+	} else {
+		err = open.Run(url)
 	}
-	return false
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 // appearsSuccessful reports whether the command appears to have run successfully.
