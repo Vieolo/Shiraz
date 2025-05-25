@@ -205,3 +205,4 @@ func getSubfolders(currentFolder ReportFolder, allFolders []ReportFolder) []Repo
 	}
 	return subs
 }
+

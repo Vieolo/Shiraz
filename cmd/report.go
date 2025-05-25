@@ -8,11 +8,12 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	filemanagement "github.com/vieolo/file-management"
+	fm "github.com/vieolo/file-management"
 	"github.com/vieolo/shiraz/browser"
 	"github.com/vieolo/shiraz/report"
 	"github.com/vieolo/shiraz/utils"
 	tu "github.com/vieolo/terminal-utils"
+	"strings"
 )
 
 // reportCmd represents the report command
@@ -33,17 +34,18 @@ var reportCmd = &cobra.Command{
 		if re != nil {
 			tu.PrintError(re.Error())
 		}
-		filemanagement.CreateDirIfNotExists(conf.CoverageFolderPath, 0777)
+		fm.CreateDirIfNotExists(conf.CoverageFolderPath, 0777)
 
-		// go test -v -coverpkg=./... ./... -coverprofile=coverage.out ./...
+		// go test -v -coverpkg=./... -coverprofile=coverage/coverage.out ./...
 		cArgs := []string{
 			"test",
 			"-v",
 			fmt.Sprintf("-coverpkg=%v", projPath),
-			projPath,
 			fmt.Sprintf("-coverprofile=%v", outPath),
-			projPath,
+			fmt.Sprintf("%v/...", projPath),
 		}
+		cmdString := strings.Join(cArgs, " ")
+	        fmt.Println(cmdString)
 
 		stdout, stderr, commandErr := tu.RunCommand(tu.CommandConfig{
 			Command: "go",
@@ -51,14 +53,13 @@ var reportCmd = &cobra.Command{
 			Env:     conf.Env,
 		})
 
-		if commandErr != nil {
-			tu.PrintError(commandErr.Error())
-			return
-		}
-
 		fmt.Println(stdout.String())
 		if len(stderr.String()) > 0 {
 			fmt.Println(stderr.String())
+		}
+
+		if commandErr != nil {
+			tu.PrintError(commandErr.Error())
 		}
 
 		genErr := report.GenHTMLReport(outPath, conf)

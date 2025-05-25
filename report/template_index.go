@@ -28,7 +28,7 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 		files = append(files, fmt.Sprintf(`
 		<tr>	
 			<td class="file-td"><a href="./%v">%v</a></td>
-			<td class="coverage-text coverage-%v">%v%%</td>
+			<td class="coverage-text coverage-%v">%.2f%%</td>
 		</tr>
 		`, strings.Replace(name, ".go", ".html", 1), name, fileCoverageClass, f.Coverage))
 	}
@@ -39,7 +39,7 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 		subFolders = append(subFolders, fmt.Sprintf(`
 		<tr>
 			<td class="file-td"><a href="%v/index.html">%v</a></td>
-			<td class="coverage-text coverage-%v">%v%%</td>
+			<td class="coverage-text coverage-%v">%.2f%%</td>
 		</tr>
 		`, sub.RelativePath, sub.Name, cc, sub.GetCoverage().Total))
 	}
@@ -163,9 +163,9 @@ func generateIndexHTMLFile(fol ReportFolder) string {
 			</div>
 			<div class="coverage-header">				
 				<p>Coverage -> </p>
-				<p class="coverage-text coverage-%v">Total: %v%%</p>
-				<p class="coverage-text coverage-%v">Files: %v%%</p>
-				<p class="coverage-text coverage-%v">Folders: %v%%</p>
+				<p class="coverage-text coverage-%v">Total: %.2f%%</p>
+				<p class="coverage-text coverage-%v">Files: %.2f%%</p>
+				<p class="coverage-text coverage-%v">Folders: %.2f%%</p>
 			</div>
 
 			%v

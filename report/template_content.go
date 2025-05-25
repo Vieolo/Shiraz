@@ -110,7 +110,7 @@ func generateContentHTMLFile(basePath string, file ReportFile) string {
 				<p>%v</p>
 			</div>
 			<div class="coverage-header">				
-				<p class="coverage-text coverage-%v">Coverage: %v%%</p>
+				<p class="coverage-text coverage-%v">Coverage: %.2f%%</p>
 			</div>
 			<pre>%v
 			</pre>

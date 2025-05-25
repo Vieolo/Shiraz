@@ -9,3 +9,7 @@ func FnOne() string {
 func FnTwo() string {
 	return "two"
 }
+
+func FnThree() string {
+	return "three"
+}
