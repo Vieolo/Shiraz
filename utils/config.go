@@ -6,16 +6,18 @@ import (
 	"strings"
 )
 
-type testConifg struct {
+type testConfig struct {
 	Command string `json:"command"`
 	Output  string `json:"output"`
 }
 
 type ShirazConfig struct {
-	Test               testConifg        `json:"test"`
+	Test               testConfig        `json:"test"`
 	ProjectPath        string            `json:"projectPath"`
 	CoverageFolderPath string            `json:"coverageFolderPath"`
 	Env                map[string]string `json:"env"`
+	Scripts		   map[string]string `json:"scripts"`
+	TestScripts	   map[string]string `json:"testScripts"`
 	Ignore             []string          `json:"ignore"`
 	IgnoreFiles        []string
 	IgnoreFolders      []string
@@ -56,12 +58,15 @@ func GetConfig() (ShirazConfig, error) {
 
 func GetDefaultConfig() ShirazConfig {
 	return ShirazConfig{
-		Test: testConifg{
+		Test: testConfig{
 			Command: "go test -v ./...",
 			Output:  "pkgname",
 		},
 		ProjectPath:        ".",
 		CoverageFolderPath: "./coverage/",
+		Scripts:	    map[string]string{
+			"test": "echo 'You are running shiraz without a config file. This output was from running shiraz run test'",
+		},
 		Ignore:             make([]string, 0),
 	}
 }
