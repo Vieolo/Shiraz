@@ -65,7 +65,7 @@ func GetDefaultConfig() ShirazConfig {
 		ProjectPath:        ".",
 		CoverageFolderPath: "./coverage/",
 		Scripts:	    map[string]string{
-			"test": "echo 'You are running shiraz without a config file. This output was from running shiraz run test'",
+			"example": "echo 'You are running shiraz without a config file. This output was from running shiraz run test'",
 		},
 		Ignore:             make([]string, 0),
 	}

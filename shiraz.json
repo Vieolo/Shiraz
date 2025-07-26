@@ -3,5 +3,12 @@
     "coverageFolderPath": "./example/coverage/",
     "ignore": [
         
-    ]
+    ],
+    "scripts": {
+        "example" : "echo Hello World!; cat /dev/urandom | head -c 10 | base32 | head -c 16;"
+    },
+    "test": {
+        "command" : "go test -v ./...;",
+        "output"  : "pkgname"
+    }
 }
