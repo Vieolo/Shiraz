@@ -62,7 +62,7 @@ func GetDefaultConfig() ShirazConfig {
 			Command: "go test -v ./...",
 			Output:  "pkgname",
 		},
-		ProjectPath:        ".",
+		ProjectPath:        "./...",
 		CoverageFolderPath: "./coverage/",
 		Scripts:	    map[string]string{
 			"example": "echo 'You are running shiraz without a config file. This output was from running shiraz run test'",

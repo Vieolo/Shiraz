@@ -24,7 +24,7 @@ var reportCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		conf := utils.GetConfigOrDefault()
 
-		projPath := "."
+		projPath := "./..."
 		if conf.ProjectPath != "" && conf.ProjectPath != "." {
 			projPath = conf.ProjectPath
 		}
